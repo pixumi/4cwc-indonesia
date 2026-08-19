@@ -6,3 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "4cwc-db"
 database_id = "60f34038-96ee-4a2b-b428-af3f7d6aa660"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "09bdc8acbb3744559feb9ec415ddb481"
