@@ -1,0 +1,81 @@
+---
+import Logo from "./Logo.astro";
+
+interface Props {
+  active: "roster-generator" | "dashboard";
+  role: "admin" | "player";
+  displayName: string;
+}
+
+const { active, role, displayName } = Astro.props;
+---
+
+<div class="sidebar">
+  <div class="sidebar-head">
+    <Logo id="lg-sidebar" />
+    <div class="brand-text">
+      <span class="brand-title" style="font-size:16px;">4CWC<span class="dot">.</span>ID</span>
+      <span class="brand-sub">{role === "admin" ? "Admin Panel" : "Team Dashboard"}</span>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:4px;">
+    {
+      role === "admin" && (
+        <a href="/admin/roster-generator" class={`navitem ${active === "roster-generator" ? "active" : ""}`}>
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+            <path d="M3 17L13 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            <path
+              d="M15 3L15.9 5.1L18 6L15.9 6.9L15 9L14.1 6.9L12 6L14.1 5.1L15 3Z"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Roster Generator
+        </a>
+      )
+    }
+    <a href="/dashboard" class={`navitem ${active === "dashboard" ? "active" : ""}`}>
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+        <circle cx="7.2" cy="6.5" r="2.8" stroke="currentColor" stroke-width="1.6"></circle>
+        <path
+          d="M2.2 16.5C2.7 13.2 4.7 11.5 7.2 11.5C9.7 11.5 11.7 13.2 12.2 16.5"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"></path>
+      </svg>
+      Roster Resmi
+    </a>
+  </div>
+
+  <div class="sidebar-foot">
+    <div style="display:flex; align-items:center; gap:10px; padding:10px 8px; border-top:1px solid var(--border-faint);">
+      <div class="avatar" style="width:34px;height:34px;font-size:14px;">{displayName.charAt(0).toUpperCase()}</div>
+      <div style="line-height:1.2;">
+        <div style="font-size:13px; font-weight:600;">{displayName}</div>
+        <div style="font-size:11px; color:var(--text-muted);">{role === "admin" ? "Tim Manager" : "Roster Starter"}</div>
+      </div>
+    </div>
+    <form method="POST" action="/api/logout">
+      <button
+        type="submit"
+        class="navitem"
+        style="color:var(--text-muted); background:none; border:none; width:100%; text-align:left; cursor:pointer; font-family:'Manrope';"
+      >
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+          <path
+            d="M8 17H4.5C3.7 17 3 16.3 3 15.5V4.5C3 3.7 3.7 3 4.5 3H8"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+          <path d="M13 14L17 10L13 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+          ></path>
+          <path d="M17 10H8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+        Logout
+      </button>
+    </form>
+  </div>
+</div>

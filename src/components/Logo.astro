@@ -1,0 +1,23 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = "lg" } = Astro.props;
+---
+
+<svg width="30" height="30" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="14" cy="6.4" r="2.6" fill={`url(#${id})`}></circle>
+  <path
+    d="M4.5 13.5L10 22H18L23.5 13.5"
+    stroke={`url(#${id})`}
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"></path>
+  <defs>
+    <linearGradient id={id} x1="4.5" y1="6.4" x2="23.5" y2="22" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E9C879"></stop>
+      <stop offset="1" stop-color="#8E80E8"></stop>
+    </linearGradient>
+  </defs>
+</svg>

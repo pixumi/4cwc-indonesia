@@ -1,0 +1,27 @@
+{
+  "name": "4cwc-indonesia",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "types": "wrangler types",
+    "predev": "npm run types",
+    "prebuild": "npm run types",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "wrangler pages dev ./dist",
+    "deploy": "astro build && wrangler pages deploy ./dist",
+    "db:migrate:local": "wrangler d1 execute 4cwc-db --local --file=./schema.sql",
+    "db:migrate:remote": "wrangler d1 execute 4cwc-db --remote --file=./schema.sql"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.2.2",
+    "astro": "^7.2.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^22.10.0",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.124.0"
+  }
+}

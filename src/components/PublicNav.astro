@@ -1,0 +1,28 @@
+---
+import Logo from "./Logo.astro";
+import LangSwitch from "./LangSwitch.astro";
+
+interface Props {
+  active: "home" | "players";
+}
+
+const { active } = Astro.props;
+---
+
+<div class="nav">
+  <div class="brand">
+    <Logo id="lg-nav" />
+    <div class="brand-text">
+      <span class="brand-title">4CWC<span class="dot">.</span>ID</span>
+      <span class="brand-sub">Tim Indonesia</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="/" class={active === "home" ? "active" : ""}>Beranda</a>
+    <a href="/players" class={active === "players" ? "active" : ""}>Player History</a>
+  </div>
+  <div style="display:flex; align-items:center; gap:18px;">
+    <LangSwitch />
+    <a href="/admin/login" class="btn-ghost">Login</a>
+  </div>
+</div>

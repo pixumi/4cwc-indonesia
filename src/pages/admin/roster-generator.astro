@@ -1,0 +1,225 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AdminSidebar from "../../components/AdminSidebar.astro";
+
+const db = env.DB;
+const user = Astro.locals.user!;
+
+const url = new URL(Astro.request.url);
+const seasons = (await db.prepare("SELECT id, year, label FROM seasons ORDER BY year DESC").all()).results ?? [];
+const requestedId = url.searchParams.get("season");
+const activeSeason =
+  ((requestedId ? (seasons as any[]).find((s) => String(s.id) === requestedId) : seasons[0]) as any) ?? null;
+
+const players = (await db.prepare("SELECT id, username FROM players ORDER BY username").all()).results ?? [];
+
+const scoresByPlayer: Record<number, (number | null)[]> = {};
+if (activeSeason) {
+  const rows =
+    (
+      await db
+        .prepare("SELECT player_id, session_no, score FROM practice_scores WHERE season_id = ?1")
+        .bind(activeSeason.id)
+        .all()
+    ).results ?? [];
+  for (const r of rows as any[]) {
+    scoresByPlayer[r.player_id] ??= [null, null, null];
+    scoresByPlayer[r.player_id][r.session_no - 1] = r.score;
+  }
+}
+
+const rosterRows = activeSeason
+  ? (
+      await db
+        .prepare(
+          `SELECT re.player_id as playerId, p.username as username, re.status as status,
+                  re.average_score as averageScore, re.position as position, re.published as published
+           FROM roster_entries re JOIN players p ON p.id = re.player_id
+           WHERE re.season_id = ?1 ORDER BY re.position ASC`,
+        )
+        .bind(activeSeason.id)
+        .all()
+    ).results ?? []
+  : [];
+
+const isPublished = rosterRows.length > 0 && (rosterRows as any[]).every((r) => r.published);
+---
+
+<BaseLayout title="Roster Generator">
+  <div style="display:flex; width:100%;">
+    <AdminSidebar active="roster-generator" role="admin" displayName={user.displayName} />
+
+    <div style="flex:1; padding:48px 56px 64px 56px; max-width:1160px;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h1 style="font-size:28px; font-weight:600;">Roster Generator</h1>
+          <p style="margin-top:8px; font-size:14px; color:var(--text-muted);">
+            Susun roster resmi berdasarkan skor rata-rata sesi latihan.
+          </p>
+        </div>
+        {
+          seasons.length > 0 && (
+            <form method="GET" style="display:flex; align-items:center; gap:8px;">
+              <label class="field-label" for="season" style="margin:0;">
+                Musim
+              </label>
+              <select
+                name="season"
+                id="season"
+                onchange="this.form.submit()"
+                style="padding:8px 12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-panel); color:var(--text-primary); font-family:'Manrope';"
+              >
+                {(seasons as any[]).map((s) => (
+                  <option value={s.id} selected={activeSeason && s.id === activeSeason.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </form>
+          )
+        }
+      </div>
+
+      {
+        !activeSeason && (
+          <div class="card" style="margin-top:32px; padding:28px; color:var(--text-muted); font-size:14px;">
+            Belum ada musim aktif. Tambahkan baris baru ke tabel <code>seasons</code> lewat D1 untuk mulai mengelola
+            roster musim ini.
+          </div>
+        )
+      }
+
+      {
+        activeSeason && (
+          <>
+            <div class="card" style="margin-top:32px; padding:28px;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <h2 style="font-size:17px; font-weight:600;">Skor Sesi Latihan — {activeSeason.label}</h2>
+                  <p style="margin-top:4px; font-size:13px; color:var(--text-muted);">
+                    Input manual dari hasil scrim & analisis replay.
+                  </p>
+                </div>
+                <form method="POST" action="/api/players/create" style="display:flex; gap:8px;">
+                  <input type="hidden" name="season" value={activeSeason.id} />
+                  <input
+                    class="field-input"
+                    style="margin:0; width:200px; padding:9px 12px; font-size:13.5px;"
+                    type="text"
+                    name="username"
+                    placeholder="Tambah nama pemain"
+                    required
+                  />
+                  <button type="submit" class="btn-ghost" style="padding:9px 16px; font-size:13px;">
+                    Tambah
+                  </button>
+                </form>
+              </div>
+
+              {players.length === 0 ? (
+                <p style="margin-top:20px; color:var(--text-muted); font-size:13.5px;">
+                  Belum ada pemain. Tambahkan pemain lewat form di atas.
+                </p>
+              ) : (
+                <form method="POST" action="/api/roster/generate">
+                  <input type="hidden" name="season" value={activeSeason.id} />
+                  <div style="overflow-x:auto;">
+                    <table style="margin-top:20px; min-width:480px;">
+                      <thead>
+                        <tr>
+                          <th>Pemain</th>
+                          <th>Sesi 1</th>
+                          <th>Sesi 2</th>
+                          <th>Sesi 3</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(players as any[]).map((p) => (
+                          <tr>
+                            <td style="color:var(--text-primary); font-weight:600;">{p.username}</td>
+                            {[0, 1, 2].map((i) => (
+                              <td>
+                                <input
+                                  class="score-input"
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="100"
+                                  name={`score_${p.id}_${i + 1}`}
+                                  value={scoresByPlayer[p.id]?.[i] ?? ""}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style="display:flex; gap:14px; margin-top:24px;">
+                    <button type="submit" class="btn-primary">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 17L13 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                        <path
+                          d="M15 3L15.9 5.1L18 6L15.9 6.9L15 9L14.1 6.9L12 6L14.1 5.1L15 3Z"
+                          stroke="currentColor"
+                          stroke-width="1.3"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Generate Roster
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {rosterRows.length > 0 && (
+              <div class="card" style="margin-top:24px; padding:28px;">
+                <h2 style="font-size:17px; font-weight:600;">Preview Roster Hasil Generate</h2>
+                <p style="margin-top:4px; font-size:13px; color:var(--text-muted);">
+                  Diurutkan otomatis berdasarkan rata-rata skor tertinggi.
+                </p>
+
+                <div style="display:flex; flex-direction:column; gap:2px; margin-top:20px;">
+                  {(rosterRows as any[]).map((r, i) => (
+                    <div
+                      style={`display:flex; align-items:center; gap:14px; padding:11px 6px; border-bottom:1px solid var(--border-faint); ${r.status === "substitute" ? "opacity:0.65;" : ""}`}
+                    >
+                      <div style="width:20px; font-family:'Space Grotesk'; font-size:13px; color:var(--text-muted);">{i + 1}</div>
+                      <div class="avatar" style="width:34px;height:34px;font-size:13px;">
+                        {r.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div style="flex:1; font-size:14px; font-weight:600;">{r.username}</div>
+                      <div style="font-family:'Space Grotesk'; font-size:13.5px; color:var(--gold); width:60px;">
+                        {r.averageScore?.toFixed(1)}
+                      </div>
+                      <span class={`badge ${r.status === "starter" ? "badge-gold" : "badge-muted"}`}>
+                        {r.status === "starter" ? "Starter" : "Cadangan"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:26px; padding-top:22px; border-top:1px solid var(--border-faint); flex-wrap:wrap; gap:16px;">
+                  <p style="font-size:12.5px; color:var(--text-muted); max-width:420px; line-height:1.6;">
+                    {isPublished
+                      ? "Roster ini sudah dipublikasikan dan tampil di Team Dashboard & Player History."
+                      : "Roster masih draf. Publikasikan agar tampil di Team Dashboard dan hanya terlihat oleh anggota roster terkait."}
+                  </p>
+                  <form method="POST" action="/api/roster/publish">
+                    <input type="hidden" name="season" value={activeSeason.id} />
+                    <button type="submit" class="btn-primary" disabled={isPublished}>
+                      {isPublished ? "Sudah Dipublikasikan" : "Publikasikan ke Team Dashboard"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+          </>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>

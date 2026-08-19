@@ -1,0 +1,75 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Logo from "../../components/Logo.astro";
+
+const url = new URL(Astro.request.url);
+const hasError = url.searchParams.get("error") === "1";
+const next = url.searchParams.get("next") ?? "";
+---
+
+<BaseLayout title="Login">
+  <div style="min-height:100vh; display:flex; flex-direction:column;">
+    <div style="padding:28px 48px;">
+      <a href="/" style="display:inline-flex; align-items:center; gap:9px; font-size:13.5px; font-weight:600; color:var(--text-secondary);">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 4L6.5 10L12.5 16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Kembali ke Beranda
+      </a>
+    </div>
+
+    <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:20px 24px 64px 24px;">
+      <div class="card" style="width:420px; max-width:100%; padding:44px 40px;">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+          <Logo id="lg-login" />
+          <div style="font-family:'Space Grotesk'; font-size:17px; font-weight:600; margin-top:12px;">
+            4CWC<span style="color:var(--gold);">.</span>ID
+          </div>
+          <h1 style="font-size:23px; font-weight:600; margin-top:22px;">Login</h1>
+          <p style="font-size:13.5px; color:var(--text-muted); margin-top:8px;">
+            Untuk pengurus, pelatih, dan roster Tim Indonesia 4CWC
+          </p>
+        </div>
+
+        <form method="POST" action="/api/login" style="margin-top:32px; display:flex; flex-direction:column; gap:18px;">
+          <input type="hidden" name="next" value={next} />
+          <div>
+            <label class="field-label" for="username">Username atau Email</label>
+            <input class="field-input" type="text" id="username" name="username" required autocomplete="username" />
+          </div>
+          <div>
+            <label class="field-label" for="password">Password</label>
+            <input
+              class="field-input"
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+
+          {
+            hasError && (
+              <div style="font-size:13px; color:oklch(0.7 0.18 25); background:oklch(0.7 0.18 25 / 0.1); border:1px solid oklch(0.7 0.18 25 / 0.3); border-radius:8px; padding:10px 14px;">
+                Username atau password salah.
+              </div>
+            )
+          }
+
+          <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:6px;">
+            Masuk
+          </button>
+        </form>
+
+        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:26px; color:var(--text-muted);">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+            <rect x="4" y="9" width="12" height="8.5" rx="1.8" stroke="currentColor" stroke-width="1.6" />
+            <path d="M6.5 9V6.5C6.5 4.5 8 3 10 3C12 3 13.5 4.5 13.5 6.5V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+          <span style="font-size:12px;">Akses terbatas &mdash; hanya untuk akun terverifikasi.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
