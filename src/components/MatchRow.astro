@@ -155,8 +155,17 @@ const leftWon = left.us ? won : !won;
   }
 
   @media (max-width: 860px) {
-    .match-row { grid-template-columns: 1fr; gap: 10px; }
+    .match-row { grid-template-columns: 1fr; gap: 10px; padding: 14px; }
     .match-link { text-align: left; }
-    .scoreline { justify-content: flex-start; }
+    .scoreline { justify-content: space-between; gap: 10px; }
+    /* Country names get to wrap instead of being cut to "United S…". */
+    .team { white-space: normal; overflow: visible; line-height: 1.3; }
+    .side { flex: 1 1 0; }
+  }
+
+  @media (max-width: 480px) {
+    .team { font-size: 13px; }
+    .scores { font-size: 17px; gap: 5px; }
+    .flag, .flag-none { width: 18px; height: 13px; }
   }
 </style>

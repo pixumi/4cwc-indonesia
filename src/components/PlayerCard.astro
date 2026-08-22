@@ -31,7 +31,7 @@ const initial = username.charAt(0).toUpperCase();
   <span class="pcard-body">
     <span class="pcard-avatar">
       <span class="pcard-initial">{initial}</span>
-      {avatarUrl && <img src={avatarUrl} alt={username} loading="lazy" />}
+      {avatarUrl && <img src={avatarUrl} alt="" aria-hidden="true" loading="lazy" />}
     </span>
 
     <span class="pcard-text">
@@ -148,3 +148,13 @@ const initial = username.charAt(0).toUpperCase();
     padding: 4px 10px;
   }
 </style>
+
+<script>
+  // Some rosters include accounts that no longer resolve on osu!. Drop the
+  // broken <img> so the gradient + initial underneath shows instead of a
+  // browser "missing image" glyph.
+  for (const img of document.querySelectorAll<HTMLImageElement>(".pcard-avatar img, .pcard-cover")) {
+    if (img.complete && img.naturalWidth === 0) img.remove();
+    else img.addEventListener("error", () => img.remove(), { once: true });
+  }
+</script>
