@@ -39,7 +39,7 @@ for (const s of seasons as any[]) {
     (
       await db
         .prepare(
-          `SELECT round, opponent, scheduled_at, score_us, score_them, mp_link, notes
+          `SELECT round, bracket, indo_side, opponent, scheduled_at, score_us, score_them, mp_link, notes
            FROM matches WHERE season_id = ?1
            ORDER BY sort_order ASC, COALESCE(scheduled_at, '9999') ASC, id ASC`,
         )
@@ -114,9 +114,19 @@ for (const s of seasons as any[]) {
         <h3 style="font-size:15px; font-weight:600; margin-top:34px; margin-bottom:14px;">{t("players.matchHistory")}</h3>
         {matchesBySeasonId[s.id]?.length ? (
           <div>
+            <div class="match-head">
+              <span></span>
+              <span class="match-head-teams">
+                <span>{t("match.teamA")}</span>
+                <span>{t("match.teamB")}</span>
+              </span>
+              <span></span>
+            </div>
             {matchesBySeasonId[s.id].map((m: any) => (
               <MatchRow
                 round={m.round}
+                bracket={m.bracket ?? null}
+                indoSide={m.indo_side === 2 ? 2 : 1}
                 opponent={m.opponent}
                 scheduledAt={m.scheduled_at}
                 scoreUs={m.score_us}
@@ -163,6 +173,24 @@ for (const s of seasons as any[]) {
     cursor: pointer;
   }
   .season[hidden] { display: none; }
+
+  /* Column captions above the scoreline, mirroring the source bracket tables. */
+  .match-head {
+    display: grid;
+    grid-template-columns: 240px 1fr 90px;
+    gap: 18px;
+    padding: 0 16px 8px 16px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .match-head-teams { display: flex; justify-content: center; gap: 16px; }
+  .match-head-teams > span { flex: 1; }
+  .match-head-teams > span:first-child { text-align: right; }
+  .match-head-teams > span:last-child { text-align: left; }
+  @media (max-width: 860px) { .match-head { display: none; } }
 </style>
 
 <script>

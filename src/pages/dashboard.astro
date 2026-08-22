@@ -37,7 +37,7 @@ const matches = activeSeason
   ? ((
       await db
         .prepare(
-          `SELECT id, round, opponent, scheduled_at, status, score_us, score_them, mp_link, notes
+          `SELECT id, round, bracket, indo_side, opponent, scheduled_at, status, score_us, score_them, mp_link, notes
            FROM matches WHERE season_id = ?1
            ORDER BY sort_order ASC, COALESCE(scheduled_at, '9999') ASC, id ASC`,
         )
@@ -147,7 +147,10 @@ const statusBadge: Record<string, string> = {
             {(matches as any[]).map((m) => (
               <div class="card" style="padding:18px 20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
                 <div style="min-width:120px;">
-                  <div style="font-family:'Space Grotesk'; font-weight:600; font-size:14px;">{m.round}</div>
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-family:'Space Grotesk'; font-weight:600; font-size:14px;">{m.round}</span>
+                    {m.bracket && <span class="badge badge-muted" style="font-size:9.5px;">{t(`bracket.${m.bracket}`)}</span>}
+                  </div>
                   <div style="font-size:11.5px; color:var(--text-muted); margin-top:3px;">
                     {formatDateTime(m.scheduled_at, lang) ?? t("match.tbd")}
                   </div>
