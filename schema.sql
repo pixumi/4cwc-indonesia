@@ -63,6 +63,11 @@ CREATE TABLE IF NOT EXISTS matches (
   opponent TEXT NOT NULL,
   scheduled_at TEXT,
   status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'live', 'done')),
+  bracket TEXT CHECK (bracket IN ('upper', 'lower', 'grand')),
+  -- Which side Indonesia was listed on in the source bracket (1 = Team A,
+  -- 2 = Team B). Kept so the scoreline can be shown in the published order
+  -- instead of always putting the winner first.
+  indo_side INTEGER NOT NULL DEFAULT 1 CHECK (indo_side IN (1, 2)),
   score_us INTEGER,
   score_them INTEGER,
   mp_link TEXT,
