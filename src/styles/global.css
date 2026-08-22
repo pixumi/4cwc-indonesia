@@ -346,3 +346,102 @@ td {
   border-style: dashed;
   color: var(--text-muted);
 }
+
+/* ===========================================================================
+   Sticky auto-hiding public header
+   Sits at the top, slides out of the way while reading downward, and comes
+   back as soon as the user scrolls up — so the nav is always one flick away
+   without having to travel back to the top of the page.
+   =========================================================================== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: oklch(0.1 0.02 282 / 0.86);
+  -webkit-backdrop-filter: saturate(150%) blur(14px);
+  backdrop-filter: saturate(150%) blur(14px);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+  will-change: transform;
+}
+.nav[data-hidden="true"] {
+  transform: translateY(-100%);
+}
+.nav[data-scrolled="true"] {
+  box-shadow: 0 6px 24px oklch(0 0 0 / 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav { transition: none; }
+  .nav[data-hidden="true"] { transform: none; }
+}
+
+/* ===========================================================================
+   Responsive layer
+   The layouts were written desktop-first with fixed 80px gutters and 3-column
+   grids. Everything below re-flows those for tablet and phone widths.
+   =========================================================================== */
+
+/* Nothing should ever cause a sideways scroll on a phone. */
+html, body { max-width: 100%; overflow-x: hidden; }
+img, svg { max-width: 100%; }
+
+/* Shared page gutter, used in place of the old hard-coded 80px padding. */
+.page-pad { padding-left: 80px; padding-right: 80px; }
+
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 1100px) {
+  .roster-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .page-pad { padding-left: 28px; padding-right: 28px; }
+  .nav { padding: 16px 28px; gap: 14px; }
+  .nav-links { gap: 22px; order: 3; width: 100%; justify-content: center; }
+  .sidebar {
+    width: 100%;
+    min-height: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border-faint);
+    padding: 18px 16px;
+  }
+  .btn-primary, .btn-ghost { padding: 11px 20px; font-size: 13.5px; }
+}
+
+@media (max-width: 620px) {
+  .page-pad { padding-left: 18px; padding-right: 18px; }
+  .nav { padding: 13px 18px; }
+  .nav-links { gap: 18px; font-size: 13px; }
+  .roster-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .pill { padding: 7px 14px; font-size: 12.5px; }
+  .field-input { font-size: 16px; } /* keeps iOS from zooming on focus */
+}
+
+/* Logged-in shell: sidebar beside the content on desktop, stacked on phones. */
+.app-shell { display: flex; width: 100%; }
+.app-main { flex: 1; min-width: 0; padding: 44px 56px 64px 56px; }
+
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .app-shell { flex-direction: column; }
+  .app-main { padding: 28px 24px 48px 24px; }
+  .admin-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .app-main { padding: 22px 18px 40px 18px; }
+  .admin-form { grid-template-columns: minmax(0, 1fr); }
+  /* Wide data blocks scroll inside themselves rather than stretching the page. */
+  table { display: block; overflow-x: auto; }
+}
+
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 820px) { .info-grid { grid-template-columns: minmax(0, 1fr); } }
