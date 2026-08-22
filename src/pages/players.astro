@@ -4,6 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PublicNav from "../components/PublicNav.astro";
 import PlayerCard from "../components/PlayerCard.astro";
 import MatchRow from "../components/MatchRow.astro";
+import { formatResult } from "../lib/i18n";
 
 const db = env.DB;
 const t = Astro.locals.t;
@@ -12,7 +13,7 @@ const lang = Astro.locals.lang;
 const seasons =
   (
     await db
-      .prepare("SELECT id, year, label, result, seed, record, source_url FROM seasons ORDER BY year DESC")
+      .prepare("SELECT id, year, label, result, seed, source_url FROM seasons ORDER BY year DESC")
       .all()
   ).results ?? [];
 
@@ -72,8 +73,7 @@ for (const s of seasons as any[]) {
       <section class="season page-pad" data-year={s.year} id={`season-${s.year}`} style="padding-top:0; padding-bottom:56px;">
         <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
           <h2 style="font-size:clamp(18px, 3vw, 22px); font-weight:600;">{s.label}</h2>
-          {s.result && <span class="badge badge-gold">{s.result}</span>}
-          {s.record && <span class="badge badge-muted">{t("players.record")} {s.record}</span>}
+          {s.result && <span class="badge badge-gold">{formatResult(s.result, lang)}</span>}
           {s.seed && (
             <span style="font-size:12.5px; color:var(--text-muted);">
               {t("players.seed")}: {s.seed}
@@ -89,7 +89,6 @@ for (const s of seasons as any[]) {
                 osuId={p.osu_id ?? null}
                 coverUrl={p.cover_url ?? null}
                 isCaptain={p.is_captain === 1}
-                subtitle={`${t("home.playerLabel")} · ${t("players.activeIn")} ${s.year}`}
                 captainLabel={t("players.captain")}
               />
             ))}
@@ -185,36 +184,3 @@ for (const s of seasons as any[]) {
   @media (max-width: 860px) { .match-head { display: none; } }
 </style>
 
-<script>
-  // Year filter: "Semua" shows every season, a year shows only that one.
-  // Progressive enhancement — with JS off, every season stays visible.
-  const bar = document.getElementById("year-filter");
-  const sections = Array.from(document.querySelectorAll<HTMLElement>("section.season"));
-
-  if (bar) {
-    const pills = Array.from(bar.querySelectorAll<HTMLElement>(".pill"));
-
-    const apply = (year: string) => {
-      for (const el of sections) {
-        el.hidden = year !== "all" && el.dataset.year !== year;
-      }
-      for (const b of pills) {
-        b.classList.toggle("active", b.dataset.year === year);
-      }
-      const url = new URL(window.location.href);
-      if (year === "all") url.searchParams.delete("year");
-      else url.searchParams.set("year", year);
-      history.replaceState(null, "", url.pathname + url.search);
-    };
-
-    bar.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement | null;
-      const btn = target?.closest<HTMLElement>(".pill");
-      if (btn?.dataset.year) apply(btn.dataset.year);
-    });
-
-    // Honour ?year= on load so a filtered view can be linked to.
-    const initial = new URL(window.location.href).searchParams.get("year");
-    if (initial && sections.some((sec) => sec.dataset.year === initial)) apply(initial);
-  }
-</script>

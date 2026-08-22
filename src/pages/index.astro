@@ -3,9 +3,11 @@ import { env } from "cloudflare:workers";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PublicNav from "../components/PublicNav.astro";
 import PlayerCard from "../components/PlayerCard.astro";
+import { formatResult } from "../lib/i18n";
 
 const db = env.DB;
 const t = Astro.locals.t;
+const lang = Astro.locals.lang;
 
 const seasons =
   (await db.prepare("SELECT id, year, label, result FROM seasons ORDER BY year DESC").all()).results ?? [];
@@ -87,7 +89,7 @@ const highlightRoster = highlightSeason
               {s.year}
             </div>
             <div style="margin-top:14px;">
-              <span class={`badge ${s.result ? "badge-gold" : "badge-muted"}`}>{s.result ?? t("home.season.soon")}</span>
+              <span class={`badge ${s.result ? "badge-gold" : "badge-muted"}`}>{formatResult(s.result, lang) ?? t("home.season.soon")}</span>
             </div>
           </div>
         ))
@@ -111,7 +113,6 @@ const highlightRoster = highlightSeason
             osuId={p.osu_id ?? null}
             coverUrl={p.cover_url ?? null}
             isCaptain={p.is_captain === 1}
-            subtitle={`${t("home.playerLabel")} · ${highlightSeason?.label ?? ""}`}
             captainLabel={t("players.captain")}
           />
         ))
