@@ -4,11 +4,10 @@ interface Props {
   osuId: number | null;
   coverUrl: string | null;
   isCaptain: boolean;
-  subtitle: string;
   captainLabel: string;
 }
 
-const { username, osuId, coverUrl, isCaptain, subtitle, captainLabel } = Astro.props;
+const { username, osuId, coverUrl, isCaptain, captainLabel } = Astro.props;
 
 // Always link out to osu!, even for accounts that no longer resolve — landing
 // on osu!'s own "user not found" page is more useful than a dead card.
@@ -36,7 +35,6 @@ const initial = username.charAt(0).toUpperCase();
 
     <span class="pcard-text">
       <span class="pcard-name">{username}</span>
-      <span class="pcard-sub">{subtitle}</span>
     </span>
 
     {isCaptain && (
@@ -132,7 +130,6 @@ const initial = username.charAt(0).toUpperCase();
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .pcard-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
   .pcard-crown {
     display: inline-flex;
@@ -149,12 +146,3 @@ const initial = username.charAt(0).toUpperCase();
   }
 </style>
 
-<script>
-  // Some rosters include accounts that no longer resolve on osu!. Drop the
-  // broken <img> so the gradient + initial underneath shows instead of a
-  // browser "missing image" glyph.
-  for (const img of document.querySelectorAll<HTMLImageElement>(".pcard-avatar img, .pcard-cover")) {
-    if (img.complete && img.naturalWidth === 0) img.remove();
-    else img.addEventListener("error", () => img.remove(), { once: true });
-  }
-</script>
