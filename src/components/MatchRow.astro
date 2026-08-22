@@ -45,9 +45,9 @@ const leftWon = left.us ? won : !won;
     <div class="side side-left">
       <span class={`team ${leftWon ? "team-win" : ""}`}>{left.name}</span>
       {left.flag ? (
-        <img class="flag" src={left.flag} width="22" height="16" alt={left.name} loading="lazy" />
+        <img class={`flag ${leftWon ? "" : "flag-dim"}`} src={left.flag} width="22" height="16" alt={left.name} loading="lazy" />
       ) : (
-        <span class="flag flag-none" aria-hidden="true"></span>
+        <span class={`flag flag-none ${leftWon ? "" : "flag-dim"}`} aria-hidden="true"></span>
       )}
     </div>
 
@@ -65,9 +65,9 @@ const leftWon = left.us ? won : !won;
 
     <div class="side side-right">
       {right.flag ? (
-        <img class="flag" src={right.flag} width="22" height="16" alt={right.name} loading="lazy" />
+        <img class={`flag ${leftWon ? "flag-dim" : ""}`} src={right.flag} width="22" height="16" alt={right.name} loading="lazy" />
       ) : (
-        <span class="flag flag-none" aria-hidden="true"></span>
+        <span class={`flag flag-none ${leftWon ? "flag-dim" : ""}`} aria-hidden="true"></span>
       )}
       <span class={`team ${!leftWon ? "team-win" : ""}`}>{right.name}</span>
     </div>
@@ -127,6 +127,8 @@ const leftWon = left.us ? won : !won;
   .team-win { color: var(--text-primary); font-weight: 800; letter-spacing: 0.005em; }
 
   .flag { border-radius: 3px; flex-shrink: 0; object-fit: cover; box-shadow: 0 0 0 1px oklch(1 0 0 / 0.12); }
+  /* The losing side recedes so the winner's row reads at a glance. */
+  .flag-dim { opacity: 0.38; filter: saturate(0.55); }
   .flag-none {
     width: 22px; height: 16px; border-radius: 3px; display: inline-block;
     background: var(--bg-panel-hover); box-shadow: 0 0 0 1px oklch(1 0 0 / 0.12);
