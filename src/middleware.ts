@@ -6,6 +6,48 @@ import { DEFAULT_LANG, LANG_COOKIE, isLang, useTranslations, type Lang } from ".
 
 const PUBLIC_ADMIN_PATHS = new Set(["/admin/login"]);
 
+/** The only API routes reachable without a session. */
+const PUBLIC_API_PATHS = new Set(["/api/login"]);
+/** API routes any signed-in user may call; everything else needs an admin. */
+const ANY_USER_API_PATHS = new Set(["/api/logout"]);
+
+/**
+ * Headers applied to every response. These are the parts of "hardening" that
+ * actually hold: they constrain what the browser will execute, embed and leak.
+ * They cannot stop someone editing the DOM in their own devtools — nothing can,
+ * and such edits are local to that person's browser and never reach the server.
+ * What protects the data is the authorization check below plus server-side
+ * validation, not hiding anything from the client.
+ */
+const SECURITY_HEADERS: Record<string, string> = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "X-Frame-Options": "DENY",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    // Inline styles are used throughout the markup; scripts stay first-party.
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: https://a.ppy.sh https://assets.ppy.sh https://flagcdn.com",
+    "connect-src 'self'",
+    "upgrade-insecure-requests",
+  ].join("; "),
+};
+
+function withSecurityHeaders(res: Response): Response {
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+    if (!res.headers.has(k)) res.headers.set(k, v);
+  }
+  return res;
+}
+
 /** Looks like "no such table: x" / "D1_ERROR" — i.e. the schema was never run. */
 function isSchemaError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
@@ -87,10 +129,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return context.redirect(`/admin/login?next=${encodeURIComponent(pathname)}`);
     }
 
-    return await next();
+    // Default-deny for the API surface. Individual routes may still check their
+    // own requirements, but a new endpoint is protected the moment it is added
+    // rather than only when someone remembers to guard it.
+    if (pathname.startsWith("/api/") && !PUBLIC_API_PATHS.has(pathname)) {
+      const needsAdmin = !ANY_USER_API_PATHS.has(pathname);
+      const allowed = needsAdmin ? user?.role === "admin" : !!user;
+      if (!allowed) {
+        return withSecurityHeaders(
+          new Response(JSON.stringify({ error: "forbidden" }), {
+            status: user ? 403 : 401,
+            headers: { "content-type": "application/json; charset=utf-8" },
+          }),
+        );
+      }
+    }
+
+    return withSecurityHeaders(await next());
   } catch (err) {
     const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
     console.error("[4cwc] request failed", pathname, message);
-    return errorPage(lang, isSchemaError(err) ? "db" : "generic", message, 500);
+    return withSecurityHeaders(errorPage(lang, isSchemaError(err) ? "db" : "generic", message, 500));
   }
 });
