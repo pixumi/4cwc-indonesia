@@ -12,7 +12,9 @@ Dibangun dengan [Astro](https://astro.build) (server-rendered) + [Cloudflare Pag
 | `/players` | Publik | Player History — roster tiap musim |
 | `/admin/login` | Publik | Login (admin & pemain roster pakai form yang sama) |
 | `/admin/roster-generator` | Admin saja | Input skor latihan → generate → publikasikan roster |
-| `/dashboard` | Login (admin atau pemain) | Roster resmi musim aktif — privat |
+| `/admin/matches` | Admin saja | Kelola jadwal & hasil pertandingan |
+| `/admin/team-info` | Admin saja | Kelola catatan/link Info Tim |
+| `/dashboard` | Login (admin atau pemain) | Roster resmi + Jadwal Pertandingan + Info Tim musim aktif — privat |
 
 Catatan desain: mockup awal hanya punya satu layar "Admin Login". Supaya
 `/dashboard` benar-benar bisa dibatasi hanya untuk anggota roster (bukan cuma
@@ -22,11 +24,13 @@ masuk ke panel admin + dashboard, pemain hanya masuk ke dashboard. Belum ada
 halaman pendaftaran akun pemain sendiri; akun dibuat manual lewat
 `scripts/hash-password.mjs` (lihat langkah 4 di bawah).
 
-Bagian "Jadwal Pertandingan" dan "Info Tim" yang ada di mockup desain belum
-diimplementasikan di sini (belum ada tabel data untuk itu) — supaya dashboard
-tidak menampilkan info statis yang terlihat nyata padahal bukan data
-sungguhan. Mudah ditambahkan nanti: tinggal buat tabel baru + query di
-`src/pages/dashboard.astro`.
+"Jadwal Pertandingan" dan "Info Tim" dari mockup sekarang sudah jalan, dengan
+tabel `matches` dan `team_info` plus panel admin sendiri (`/admin/matches`,
+`/admin/team-info`). Keduanya kosong sampai admin mengisinya — dashboard tidak
+menampilkan data contoh yang terlihat nyata.
+
+Baris `team_info` punya kolom `visible_to`: `roster` terlihat oleh semua yang
+login, `admin` hanya terlihat oleh admin.
 
 ## 1. Install dependencies
 
@@ -51,9 +55,15 @@ npm run db:migrate:local   # untuk development lokal
 npm run db:migrate:remote  # untuk database production di Cloudflare
 ```
 
-Ini akan membuat semua tabel, plus mengisi data historis musim 2022 (hasil
-nyata dari wiki resmi osu!: Round of 16 menang atas Swedia 5–0, lalu kalah
-dari Korea Selatan 3–6 di Perempat Final).
+Ini hanya membuat tabel — database mulai kosong.
+
+Data historis musim 2022 dipisah ke `seed.sql` (hasil nyata dari wiki resmi
+osu!: Round of 16 menang atas Swedia 5–0, lalu kalah dari Korea Selatan 3–6 di
+Perempat Final). Jalankan hanya kalau memang mau dipakai:
+
+```bash
+npx wrangler d1 execute 4cwc-db --remote --file=./seed.sql
+```
 
 ## 4. Buat akun login pertama
 
@@ -79,24 +89,44 @@ Untuk akun pemain roster (role `player`), jalankan lagi dengan
 npm run dev
 ```
 
-## 6. Deploy ke Cloudflare Pages lewat GitHub
+## 6. Deploy ke Cloudflare Workers
 
-1. Push folder ini ke repo GitHub kamu.
-2. Di dashboard Cloudflare → **Workers & Pages** → **Create** → **Pages** →
-   **Connect to Git**, pilih repo ini.
-3. Build settings:
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-4. Di **Settings → Functions → D1 database bindings**, tambahkan binding
-   dengan nama `DB` yang mengarah ke database `4cwc-db` yang dibuat di
-   langkah 2 (ini menyamai binding yang ada di `wrangler.toml`, dibutuhkan
-   karena deploy lewat dashboard Git integration tidak selalu membaca
-   `wrangler.toml`).
-5. Setiap push ke branch utama akan otomatis build & deploy.
+Proyek ini di-deploy sebagai **Worker** (bukan Cloudflare Pages).
 
-> Cloudflare aktif mengembangkan produknya — kalau langkah di dashboard
-> terasa berbeda dari yang tertulis di sini, cek dokumentasi terbaru di
-> [developers.cloudflare.com/pages](https://developers.cloudflare.com/pages/).
+```bash
+npm run deploy
+```
+
+Yang dijalankan: `astro build && wrangler deploy -c dist/server/wrangler.json`.
+
+### Kenapa pakai `-c dist/server/wrangler.json`
+
+Ini penting dan sempat bikin situs rusak. Adapter `@astrojs/cloudflare`
+menaruh bundle server di `dist/server/` dan file statis di `dist/client/`,
+lalu menulis config siap-deploy di `dist/server/wrangler.json` (berisi
+`main = entry.mjs` dan binding `ASSETS` ke `../client`).
+
+`wrangler.toml` di root **sengaja tidak punya `main` dan `[assets]`**, karena
+file itu ikut dibaca `astro build` — dan build berjalan sebelum `dist/` ada,
+jadi kalau `main` menunjuk ke hasil build, checkout bersih gagal build.
+
+Konsekuensinya: deploy dengan `wrangler.toml` root menghasilkan Worker tanpa
+entrypoint, dan **setiap route menjawab `[object Object]`**. Selalu deploy
+lewat `npm run deploy`.
+
+Kalau memakai integrasi Git (Workers Builds) di dashboard Cloudflare, set:
+
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy -c dist/server/wrangler.json`
+
+### Catatan `compatibility_date`
+
+`compatibility_date` dikunci di `2025-09-01`. Dengan Astro 7 +
+`@astrojs/cloudflare` 14, compatibility date sekitar `2025-10` ke atas membuat
+body hasil render tidak lagi dikenali sebagai body Response yang sah, sehingga
+di-stringify jadi `[object Object]` — persis gejala yang sama seperti di atas,
+tapi penyebabnya beda. Jangan naikkan tanggal ini tanpa mengetes render
+halaman lebih dulu.
 
 ## Catatan keamanan & keterbatasan
 
@@ -109,5 +139,7 @@ npm run dev
 - Belum ada rate limiting di endpoint login — kalau situs ini publik dan
   dipakai serius, pertimbangkan menambah Cloudflare Turnstile atau rate
   limiting di `/api/login`.
-- Language switcher (bendera ID/EN) di navbar baru berupa UI, belum
-  benar-benar mengganti bahasa konten.
+- Language switcher (bendera ID/EN) sudah berfungsi: pilihan disimpan di cookie
+  `4cwc_lang` dan teks antarmuka diambil dari `src/lib/i18n.ts`. Yang
+  diterjemahkan adalah teks antarmuka — isi data dari database (nama pemain,
+  label musim, catatan admin) tetap tampil apa adanya.

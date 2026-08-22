@@ -4,6 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PublicNav from "../components/PublicNav.astro";
 
 const db = env.DB;
+const t = Astro.locals.t;
 const seasons =
   (await db.prepare("SELECT id, year, label, result, result_note FROM seasons ORDER BY year DESC").all()).results ??
   [];
@@ -30,14 +31,14 @@ for (const s of seasons as any[]) {
   <PublicNav active="players" />
 
   <div style="padding:64px 80px 32px 80px;">
-    <h1 style="font-size:38px; font-weight:600; letter-spacing:-0.01em;">Player History</h1>
+    <h1 style="font-size:38px; font-weight:600; letter-spacing:-0.01em;">{t("players.title")}</h1>
     <p style="margin-top:12px; font-size:15.5px; color:var(--text-secondary); max-width:620px; line-height:1.6;">
-      Riwayat lengkap pemain yang pernah membela Tim Indonesia di setiap musim 4 Digit Catch World Cup.
+      {t("players.lede")}
     </p>
   </div>
 
   <div style="display:flex; gap:12px; padding:0 80px 40px 80px; flex-wrap:wrap;">
-    <a href="#" class="pill active">Semua</a>
+    <a href="#" class="pill active">{t("players.all")}</a>
     {
       (seasons as any[]).map((s) => (
         <a href={`#season-${s.id}`} class={`pill ${rosterBySeasonId[s.id]?.length ? "" : "soon"}`}>
@@ -66,7 +67,7 @@ for (const s of seasons as any[]) {
                   <div>
                     <div style="font-family:'Space Grotesk'; font-weight:600; font-size:15px;">{p.username}</div>
                     <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-                      Pemain &middot; Aktif {s.year}
+                      {t("home.playerLabel")} &middot; {t("players.activeIn")} {s.year}
                     </div>
                   </div>
                 </div>
@@ -87,8 +88,7 @@ for (const s of seasons as any[]) {
             <div>
               <div style="font-family:'Space Grotesk'; font-weight:600; font-size:16px;">{s.label}</div>
               <div style="font-size:14px; color:var(--text-muted); margin-top:4px; line-height:1.6; max-width:560px;">
-                Roster musim ini belum dipublikasikan. Data akan tampil otomatis setelah admin menerbitkannya lewat
-                Roster Generator.
+                {t("players.pendingTitle")}
               </div>
             </div>
           </div>
@@ -97,17 +97,17 @@ for (const s of seasons as any[]) {
     ))
   }
 
-  {seasons.length === 0 && <div style="padding:0 80px 80px 80px; color:var(--text-muted);">Belum ada data musim.</div>}
+  {seasons.length === 0 && <div style="padding:0 80px 80px 80px; color:var(--text-muted);">{t("players.noSeasons")}</div>}
 
   <div
     style="display:flex; align-items:center; justify-content:space-between; padding:32px 80px; border-top:1px solid var(--border-faint); flex-wrap:wrap; gap:16px;"
   >
     <div style="font-size:13px; color:var(--text-muted);">
-      4CWC.ID &mdash; dibuat oleh &amp; untuk komunitas osu!catch Indonesia.
+      {t("footer.tagline")}
     </div>
     <div style="display:flex; gap:28px;">
-      <a href="/" style="font-size:13px; color:var(--text-secondary); font-weight:600;">Beranda</a>
-      <a href="/admin/login" style="font-size:13px; color:var(--text-secondary); font-weight:600;">Login</a>
+      <a href="/" style="font-size:13px; color:var(--text-secondary); font-weight:600;">{t("nav.home")}</a>
+      <a href="/admin/login" style="font-size:13px; color:var(--text-secondary); font-weight:600;">{t("nav.login")}</a>
     </div>
   </div>
 </BaseLayout>

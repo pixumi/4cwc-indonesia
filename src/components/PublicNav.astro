@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { active } = Astro.props;
+const t = Astro.locals.t;
 ---
 
 <div class="nav">
@@ -18,11 +19,11 @@ const { active } = Astro.props;
     </div>
   </div>
   <div class="nav-links">
-    <a href="/" class={active === "home" ? "active" : ""}>Beranda</a>
-    <a href="/players" class={active === "players" ? "active" : ""}>Player History</a>
+    <a href="/" class={active === "home" ? "active" : ""}>{t("nav.home")}</a>
+    <a href="/players" class={active === "players" ? "active" : ""}>{t("nav.players")}</a>
   </div>
   <div style="display:flex; align-items:center; gap:18px;">
     <LangSwitch />
-    <a href="/admin/login" class="btn-ghost">Login</a>
+    <a href="/admin/login" class="btn-ghost">{t("nav.login")}</a>
   </div>
 </div>

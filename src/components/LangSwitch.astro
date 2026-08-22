@@ -1,11 +1,25 @@
 ---
-// Visual language switcher only — no i18n content routing wired up yet.
-// The Indonesian copy is the only content today; wire this up to real
-// EN routes/content when an English version is written.
+// Real language switcher: links back to the current URL with ?lang=<code>.
+// Middleware reads that param, stores it in the 4cwc_lang cookie, and exposes
+// Astro.locals.lang / Astro.locals.t to every page.
+const current = Astro.locals.lang;
+const url = new URL(Astro.request.url);
+
+function hrefFor(lang: string) {
+  const u = new URL(url.toString());
+  u.searchParams.set("lang", lang);
+  return u.pathname + u.search;
+}
 ---
 
 <div class="lang-switch">
-  <button type="button" class="lang-btn active" title="Bahasa Indonesia" aria-label="Bahasa Indonesia">
+  <a
+    href={hrefFor("id")}
+    class={`lang-btn ${current === "id" ? "active" : ""}`}
+    title="Bahasa Indonesia"
+    aria-label="Bahasa Indonesia"
+    aria-current={current === "id" ? "true" : undefined}
+  >
     <svg width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg">
       <clipPath id="idflag-clip"><rect width="22" height="16" rx="3"></rect></clipPath>
       <g clip-path="url(#idflag-clip)">
@@ -13,8 +27,14 @@
         <rect width="22" height="8" y="8" fill="#F5F5F0"></rect>
       </g>
     </svg>
-  </button>
-  <button type="button" class="lang-btn" title="English" aria-label="English">
+  </a>
+  <a
+    href={hrefFor("en")}
+    class={`lang-btn ${current === "en" ? "active" : ""}`}
+    title="English"
+    aria-label="English"
+    aria-current={current === "en" ? "true" : undefined}
+  >
     <svg width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg">
       <clipPath id="ukflag-clip"><rect width="22" height="16" rx="3"></rect></clipPath>
       <g clip-path="url(#ukflag-clip)">
@@ -25,5 +45,5 @@
         <path d="M11 0V16M0 8H22" stroke="#C8313A" stroke-width="2.4"></path>
       </g>
     </svg>
-  </button>
+  </a>
 </div>

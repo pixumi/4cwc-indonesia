@@ -6,9 +6,10 @@ interface Props {
 }
 
 const { title } = Astro.props;
+const lang = Astro.locals.lang ?? "id";
 ---
 
-<html lang="id">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

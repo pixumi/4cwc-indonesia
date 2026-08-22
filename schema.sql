@@ -50,20 +50,32 @@ CREATE TABLE IF NOT EXISTS roster_entries (
   UNIQUE(season_id, player_id)
 );
 
--- Real public tournament record (osu.ppy.sh wiki, 4CWC 2022): Indonesia beat
--- Sweden 5-0 in Round of 16, then lost to South Korea 3-6 in the Quarterfinals.
-INSERT OR IGNORE INTO seasons (year, label, result, result_note) VALUES
-  (2022, '4CWC 2022', 'Perempat Final', 'Ro16: menang atas Swedia 5-0 · Perempat Final: kalah dari Korea Selatan 3-6');
+CREATE TABLE IF NOT EXISTS matches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  season_id INTEGER NOT NULL REFERENCES seasons(id),
+  round TEXT NOT NULL,
+  opponent TEXT NOT NULL,
+  scheduled_at TEXT,
+  status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'live', 'done')),
+  score_us INTEGER,
+  score_them INTEGER,
+  mp_link TEXT,
+  notes TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 
-INSERT OR IGNORE INTO players (username) VALUES
-  ('Kinora'), ('Mixuri'), ('ARTPHONEY'), ('Execration-'), ('dalyz'), ('Foranex');
+CREATE INDEX IF NOT EXISTS idx_matches_season ON matches(season_id, sort_order, scheduled_at);
 
-INSERT OR IGNORE INTO roster_entries (season_id, player_id, status, position, published)
-SELECT
-  (SELECT id FROM seasons WHERE year = 2022),
-  p.id,
-  'starter',
-  ROW_NUMBER() OVER (ORDER BY p.username),
-  1
-FROM players p
-WHERE p.username IN ('Kinora', 'Mixuri', 'ARTPHONEY', 'Execration-', 'dalyz', 'Foranex');
+CREATE TABLE IF NOT EXISTS team_info (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  season_id INTEGER REFERENCES seasons(id),
+  kind TEXT NOT NULL DEFAULT 'note' CHECK (kind IN ('note', 'link', 'contact')),
+  label TEXT NOT NULL,
+  value TEXT NOT NULL,
+  visible_to TEXT NOT NULL DEFAULT 'roster' CHECK (visible_to IN ('roster', 'admin')),
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_team_info_season ON team_info(season_id, sort_order);

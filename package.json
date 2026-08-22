@@ -9,8 +9,8 @@
     "prebuild": "npm run types",
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "wrangler pages dev ./dist",
-    "deploy": "astro build && wrangler pages deploy ./dist",
+    "preview": "astro build && wrangler dev -c dist/server/wrangler.json",
+    "deploy": "astro build && wrangler deploy -c dist/server/wrangler.json",
     "db:migrate:local": "wrangler d1 execute 4cwc-db --local --file=./schema.sql",
     "db:migrate:remote": "wrangler d1 execute 4cwc-db --remote --file=./schema.sql"
   },

@@ -2,12 +2,13 @@
 import Logo from "./Logo.astro";
 
 interface Props {
-  active: "roster-generator" | "dashboard";
+  active: "roster-generator" | "dashboard" | "matches" | "team-info";
   role: "admin" | "player";
   displayName: string;
 }
 
 const { active, role, displayName } = Astro.props;
+const t = Astro.locals.t;
 ---
 
 <div class="sidebar">
@@ -36,6 +37,30 @@ const { active, role, displayName } = Astro.props;
         </a>
       )
     }
+    {
+      role === "admin" && (
+        <a href="/admin/matches" class={`navitem ${active === "matches" ? "active" : ""}`}>
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+            <rect x="2.8" y="4.2" width="14.4" height="13" rx="2" stroke="currentColor" stroke-width="1.6" />
+            <path d="M2.8 8H17.2" stroke="currentColor" stroke-width="1.6" />
+            <path d="M6.8 2.8V5.4M13.2 2.8V5.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+          {t("match.title")}
+        </a>
+      )
+    }
+    {
+      role === "admin" && (
+        <a href="/admin/team-info" class={`navitem ${active === "team-info" ? "active" : ""}`}>
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="7.4" stroke="currentColor" stroke-width="1.6" />
+            <path d="M10 9V14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            <circle cx="10" cy="6.3" r="1" fill="currentColor" />
+          </svg>
+          {t("info.title")}
+        </a>
+      )
+    }
     <a href="/dashboard" class={`navitem ${active === "dashboard" ? "active" : ""}`}>
       <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
         <circle cx="7.2" cy="6.5" r="2.8" stroke="currentColor" stroke-width="1.6"></circle>
@@ -45,7 +70,7 @@ const { active, role, displayName } = Astro.props;
           stroke-width="1.6"
           stroke-linecap="round"></path>
       </svg>
-      Roster Resmi
+      {t("dash.roster.title")}
     </a>
   </div>
 
@@ -74,7 +99,7 @@ const { active, role, displayName } = Astro.props;
           ></path>
           <path d="M17 10H8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
         </svg>
-        Logout
+        {t("nav.logout")}
       </button>
     </form>
   </div>

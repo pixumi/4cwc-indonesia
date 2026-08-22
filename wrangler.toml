@@ -1,6 +1,24 @@
 name = "4cwc-indonesia"
-compatibility_date = "2026-01-01"
+
+# IMPORTANT — do not bump this date casually.
+# Astro 7 + @astrojs/cloudflare 14 render a broken body ("[object Object]" for
+# every page) under workerd compatibility dates from roughly 2025-10 onward:
+# the rendered ReadableStream stops being recognised as a valid Response body
+# and gets stringified instead. 2025-09-01 is the newest date verified working
+# with this toolchain. If you upgrade Astro or the adapter, re-test a page
+# render before raising this.
+compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
+
+# NOTE: no `main` / `[assets]` here on purpose.
+# `astro build` reads this file and runs before dist/ exists, so pointing
+# `main` at the build output makes a clean checkout fail to build.
+#
+# The Astro Cloudflare adapter emits a complete, deploy-ready config at
+# dist/server/wrangler.json (main = entry.mjs, assets -> ../client, plus the
+# bindings below). Deploying with THIS file instead produces a Worker with no
+# entrypoint. Always deploy with:
+#   npx wrangler deploy -c dist/server/wrangler.json   (= npm run deploy)
 
 [[d1_databases]]
 binding = "DB"

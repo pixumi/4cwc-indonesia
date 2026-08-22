@@ -7,5 +7,7 @@
 declare namespace App {
   interface Locals {
     user: import("./lib/db").SessionUser | null;
+    lang: import("./lib/i18n").Lang;
+    t: (key: string) => string;
   }
 }
