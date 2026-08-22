@@ -12,26 +12,21 @@ type Dict = Record<string, string>;
 
 const id: Dict = {
   "nav.home": "Beranda",
-  "nav.players": "Player History",
+  "nav.players": "Tournament History",
   "nav.login": "Login",
   "nav.logout": "Logout",
 
   "home.title.line2": "Indonesia Team",
-  "home.lede":
-    "Mengikuti jejak skuad Merah Putih di panggung kompetitif osu!catch dunia — dari kualifikasi hingga fase gugur, inilah rumah data, sejarah, dan roster Tim Indonesia.",
   "home.stat.seasons": "Musim diikuti",
   "home.stat.players": "Pemain terdaftar",
-  "home.stat.best": "Pencapaian terbaik",
   "home.seasons.title": "Pencapaian per musim",
   "home.highlight.title": "Sorotan roster",
   "home.highlight.empty": "Belum ada roster yang dipublikasikan.",
   "home.seasons.empty": "Belum ada data musim.",
 
-  "home.cta.players": "Lihat Player History",
-  "home.cta.roster": "Roster Terbaru",
+  "home.cta.players": "Lihat Tournament History",
   "home.stat.seasonsShort": "Musim Tercatat",
   "home.stat.playersShort": "Total Pemain Roster",
-  "home.stat.bestShort": "Pencapaian Terbaik",
   "home.seasons.heading": "Pencapaian per Musim",
   "home.seasons.sub": "Rekam jejak Tim Indonesia dari tahun ke tahun.",
   "home.season.soon": "Data Segera Hadir",
@@ -40,9 +35,7 @@ const id: Dict = {
   "home.viewAll": "Lihat semua",
   "home.playerLabel": "Pemain",
   "footer.tagline": "4CWC.ID — dibuat oleh & untuk komunitas osu!catch Indonesia.",
-  "players.title": "Player History",
-  "players.lede":
-    "Riwayat lengkap pemain yang pernah membela Tim Indonesia di setiap musim 4 Digit Catch World Cup.",
+  "players.title": "Tournament History",
   "players.all": "Semua",
   "players.empty": "Roster musim ini belum dipublikasikan.",
   "players.noSeasons": "Belum ada data musim di database.",
@@ -132,26 +125,21 @@ const id: Dict = {
 
 const en: Dict = {
   "nav.home": "Home",
-  "nav.players": "Player History",
+  "nav.players": "Tournament History",
   "nav.login": "Login",
   "nav.logout": "Logout",
 
   "home.title.line2": "Indonesia Team",
-  "home.lede":
-    "Following the Merah Putih squad across the competitive osu!catch world stage — from qualifiers to the knockout rounds, this is the home of Team Indonesia's data, history and rosters.",
   "home.stat.seasons": "Seasons played",
   "home.stat.players": "Registered players",
-  "home.stat.best": "Best result",
   "home.seasons.title": "Results by season",
   "home.highlight.title": "Roster highlight",
   "home.highlight.empty": "No roster has been published yet.",
   "home.seasons.empty": "No season data yet.",
 
-  "home.cta.players": "View Player History",
-  "home.cta.roster": "Latest Roster",
+  "home.cta.players": "View Tournament History",
   "home.stat.seasonsShort": "Seasons Recorded",
   "home.stat.playersShort": "Total Roster Players",
-  "home.stat.bestShort": "Best Result",
   "home.seasons.heading": "Results per Season",
   "home.seasons.sub": "Team Indonesia's track record year by year.",
   "home.season.soon": "Data Coming Soon",
@@ -160,9 +148,7 @@ const en: Dict = {
   "home.viewAll": "View all",
   "home.playerLabel": "Player",
   "footer.tagline": "4CWC.ID — built by & for the Indonesian osu!catch community.",
-  "players.title": "Player History",
-  "players.lede":
-    "The full history of players who have represented Team Indonesia in every 4 Digit Catch World Cup season.",
+  "players.title": "Tournament History",
   "players.all": "All",
   "players.empty": "This season's roster has not been published.",
   "players.noSeasons": "No season data in the database yet.",
