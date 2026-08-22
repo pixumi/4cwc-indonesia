@@ -84,6 +84,11 @@ const id: Dict = {
   "dash.starter": "Starter",
   "dash.substitute": "Cadangan",
 
+  "bracket.upper": "Upper Bracket",
+  "bracket.lower": "Lower Bracket",
+  "bracket.grand": "Grand Final",
+  "match.teamA": "Tim A",
+  "match.teamB": "Tim B",
   "match.title": "Jadwal Pertandingan",
   "match.empty": "Belum ada jadwal pertandingan yang dimasukkan admin.",
   "match.upcoming": "Akan datang",
@@ -199,6 +204,11 @@ const en: Dict = {
   "dash.starter": "Starter",
   "dash.substitute": "Substitute",
 
+  "bracket.upper": "Upper Bracket",
+  "bracket.lower": "Lower Bracket",
+  "bracket.grand": "Grand Final",
+  "match.teamA": "Team A",
+  "match.teamB": "Team B",
   "match.title": "Match Schedule",
   "match.empty": "The admin has not added any matches yet.",
   "match.upcoming": "Upcoming",
@@ -249,22 +259,35 @@ export function useTranslations(lang: Lang) {
   };
 }
 
-/** Locale-aware date formatting for a stored ISO-ish UTC string. */
+/**
+ * Match times are stored in UTC. Indonesian readers think in WIB (UTC+7), so
+ * that is what gets rendered — the timezone is stated explicitly so the number
+ * is never ambiguous. Date-only rows (historical matches with no kick-off time
+ * recorded) render as a plain date, with no misleading 00:00.
+ */
+const TZ = "Asia/Jakarta";
+const TZ_LABEL = "WIB";
+
 export function formatDateTime(value: string | null | undefined, lang: Lang): string | null {
   if (!value) return null;
-  // Date-only values (historical rows where no kick-off time is recorded)
-  // render as a plain date, with no misleading 00:00 time.
   const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
-  const iso = dateOnly ? value + "T00:00:00Z" : (value.includes("T") ? value : value.replace(" ", "T")) + "Z";
+  const iso = dateOnly
+    ? value + "T00:00:00Z"
+    : (value.includes("T") ? value : value.replace(" ", "T")) + "Z";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return value;
+
   const locale = lang === "id" ? "id-ID" : "en-GB";
   if (dateOnly) {
+    // No time recorded, so no timezone shift can be justified: show the date
+    // exactly as the source published it.
     return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(d);
   }
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC",
-  }).format(d) + " UTC";
+  return (
+    new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: TZ,
+    }).format(d) + " " + TZ_LABEL
+  );
 }
