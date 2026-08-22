@@ -1,0 +1,148 @@
+---
+interface Props {
+  username: string;
+  osuId: number | null;
+  coverUrl: string | null;
+  isCaptain: boolean;
+  subtitle: string;
+  captainLabel: string;
+}
+
+const { username, osuId, coverUrl, isCaptain, subtitle, captainLabel } = Astro.props;
+
+const profileUrl = osuId ? `https://osu.ppy.sh/users/${osuId}/fruits` : null;
+const avatarUrl = osuId ? `https://a.ppy.sh/${osuId}` : null;
+const initial = username.charAt(0).toUpperCase();
+---
+
+<a
+  class={`pcard ${isCaptain ? "pcard-captain" : ""}`}
+  href={profileUrl ?? "#"}
+  target={profileUrl ? "_blank" : undefined}
+  rel={profileUrl ? "noopener noreferrer" : undefined}
+  aria-disabled={profileUrl ? undefined : "true"}
+>
+  {coverUrl && <img class="pcard-cover" src={coverUrl} alt="" aria-hidden="true" loading="lazy" />}
+  <span class="pcard-scrim"></span>
+
+  <span class="pcard-body">
+    <span class="pcard-avatar">
+      <span class="pcard-initial">{initial}</span>
+      {avatarUrl && <img src={avatarUrl} alt={username} loading="lazy" />}
+    </span>
+
+    <span class="pcard-text">
+      <span class="pcard-name">{username}</span>
+      <span class="pcard-sub">{subtitle}</span>
+    </span>
+
+    {isCaptain && (
+      <span class="pcard-crown">
+        <svg width="11" height="11" viewBox="0 0 576 512" fill="currentColor" aria-hidden="true">
+          <path d="M309 106c11.4-7 19-19.7 19-34c0-22.1-17.9-40-40-40s-40 17.9-40 40c0 14.4 7.6 27 19 34L209.7 220.6c-9.1 18.2-32.7 23.4-48.6 10.7L72 160c5-6.7 8-15 8-24c0-22.1-17.9-40-40-40S0 113.9 0 136s17.9 40 40 40c.2 0 .5 0 .7 0L86.4 427.4c5.5 30.4 32 52.6 63 52.6l277.2 0c30.9 0 57.4-22.1 63-52.6L535.3 176c.2 0 .5 0 .7 0c22.1 0 40-17.9 40-40s-17.9-40-40-40s-40 17.9-40 40c0 9 3 17.3 8 24l-89.1 71.3c-15.9 12.7-39.5 7.5-48.6-10.7L309 106z" />
+        </svg>
+        {captainLabel}
+      </span>
+    )}
+  </span>
+</a>
+
+<style>
+  .pcard {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--border-faint);
+    background: var(--bg-panel);
+    text-decoration: none;
+    color: inherit;
+    isolation: isolate;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+  .pcard:hover { border-color: var(--border-subtle); transform: translateY(-1px); }
+  .pcard-captain { border-color: oklch(0.8 0.13 85 / 0.45); }
+  .pcard-captain:hover { border-color: var(--gold); }
+  .pcard[aria-disabled="true"] { pointer-events: none; }
+
+  /* Profile cover as the card background. */
+  .pcard-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    opacity: 0.55;
+  }
+  /* Keeps the name readable whatever the cover looks like. */
+  .pcard-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      100deg,
+      oklch(0.16 0.02 282 / 0.94) 0%,
+      oklch(0.16 0.02 282 / 0.82) 45%,
+      oklch(0.16 0.02 282 / 0.55) 100%
+    );
+  }
+
+  .pcard-body { display: flex; align-items: center; gap: 13px; padding: 18px 20px; }
+
+  .pcard-avatar {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--gold), var(--violet));
+    box-shadow: 0 0 0 1px oklch(1 0 0 / 0.14);
+  }
+  /* The initial sits underneath; the osu! avatar covers it when it loads,
+     so a broken/missing avatar degrades to the old initial instead of a gap. */
+  .pcard-initial {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: oklch(0.15 0.02 282);
+  }
+  .pcard-avatar img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pcard-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .pcard-name {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pcard-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  .pcard-crown {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: oklch(0.15 0.02 282);
+    background: var(--gold);
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+</style>
