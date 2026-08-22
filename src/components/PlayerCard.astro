@@ -10,17 +10,20 @@ interface Props {
 
 const { username, osuId, coverUrl, isCaptain, subtitle, captainLabel } = Astro.props;
 
-const profileUrl = osuId ? `https://osu.ppy.sh/users/${osuId}/fruits` : null;
+// Always link out to osu!, even for accounts that no longer resolve — landing
+// on osu!'s own "user not found" page is more useful than a dead card.
+const profileUrl = osuId
+  ? `https://osu.ppy.sh/users/${osuId}/fruits`
+  : `https://osu.ppy.sh/users/${encodeURIComponent(username)}`;
 const avatarUrl = osuId ? `https://a.ppy.sh/${osuId}` : null;
 const initial = username.charAt(0).toUpperCase();
 ---
 
 <a
   class={`pcard ${isCaptain ? "pcard-captain" : ""}`}
-  href={profileUrl ?? "#"}
-  target={profileUrl ? "_blank" : undefined}
-  rel={profileUrl ? "noopener noreferrer" : undefined}
-  aria-disabled={profileUrl ? undefined : "true"}
+  href={profileUrl}
+  target="_blank"
+  rel="noopener noreferrer"
 >
   {coverUrl && <img class="pcard-cover" src={coverUrl} alt="" aria-hidden="true" loading="lazy" />}
   <span class="pcard-scrim"></span>
@@ -63,7 +66,6 @@ const initial = username.charAt(0).toUpperCase();
   .pcard:hover { border-color: var(--border-subtle); transform: translateY(-1px); }
   .pcard-captain { border-color: oklch(0.8 0.13 85 / 0.45); }
   .pcard-captain:hover { border-color: var(--gold); }
-  .pcard[aria-disabled="true"] { pointer-events: none; }
 
   /* Profile cover as the card background. */
   .pcard-cover {
