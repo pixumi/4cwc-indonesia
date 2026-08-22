@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS players (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
+  osu_id INTEGER,
+  cover_url TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
