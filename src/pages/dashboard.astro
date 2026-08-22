@@ -18,9 +18,11 @@ const roster = activeSeason
   ? (
       await db
         .prepare(
-          `SELECT p.username as username, re.status as status, re.position as position
+          `SELECT p.username as username, re.status as status, re.position as position,
+                  re.is_captain as is_captain
            FROM roster_entries re JOIN players p ON p.id = re.player_id
-           WHERE re.season_id = ?1 AND re.published = 1 ORDER BY re.position ASC`,
+           WHERE re.season_id = ?1 AND re.published = 1
+           ORDER BY re.is_captain DESC, re.position ASC`,
         )
         .bind(activeSeason.id)
         .all()
@@ -120,7 +122,9 @@ const statusBadge: Record<string, string> = {
                     {t("dash.position")} #{p.position}
                   </div>
                 </div>
-                <span class="badge badge-gold">{t("dash.starter")}</span>
+                <span class={`badge ${p.is_captain === 1 ? "badge-gold" : "badge-muted"}`}>
+                  {p.is_captain === 1 ? t("players.captain") : t("dash.starter")}
+                </span>
               </div>
             ))}
           </div>
