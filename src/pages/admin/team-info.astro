@@ -24,10 +24,10 @@ const rows =
 ---
 
 <BaseLayout title={t("admin.info.title")}>
-  <div style="display:flex; width:100%;">
+  <div class="app-shell">
     <AdminSidebar active="team-info" role={user.role} displayName={user.displayName} />
 
-    <div style="flex:1; padding:44px 56px 64px 56px; max-width:1160px;">
+    <div class="app-main" style="max-width:1160px;">
       <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;">
         <h1 style="font-size:27px; font-weight:600;">{t("admin.info.title")}</h1>
         <LangSwitch />
@@ -37,7 +37,7 @@ const rows =
         method="POST"
         action="/api/team-info/save"
         class="card"
-        style="margin-top:28px; padding:24px; display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;"
+        class="admin-form" style="margin-top:28px; padding:24px;"
       >
         <div>
           <label class="field-label" for="label">{t("admin.label")}</label>

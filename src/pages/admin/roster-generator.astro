@@ -47,10 +47,10 @@ const isPublished = rosterRows.length > 0 && (rosterRows as any[]).every((r) => 
 ---
 
 <BaseLayout title="Roster Generator">
-  <div style="display:flex; width:100%;">
+  <div class="app-shell">
     <AdminSidebar active="roster-generator" role="admin" displayName={user.displayName} />
 
-    <div style="flex:1; padding:48px 56px 64px 56px; max-width:1160px;">
+    <div class="app-main" style="max-width:1160px;">
       <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;">
         <div>
           <h1 style="font-size:28px; font-weight:600;">Roster Generator</h1>
