@@ -27,7 +27,10 @@ CREATE TABLE IF NOT EXISTS seasons (
   year INTEGER NOT NULL UNIQUE,
   label TEXT NOT NULL,
   result TEXT,
-  result_note TEXT
+  result_note TEXT,
+  seed TEXT,
+  record TEXT,
+  source_url TEXT
 );
 
 CREATE TABLE IF NOT EXISTS practice_scores (
@@ -44,6 +47,7 @@ CREATE TABLE IF NOT EXISTS roster_entries (
   season_id INTEGER NOT NULL REFERENCES seasons(id),
   player_id INTEGER NOT NULL REFERENCES players(id),
   status TEXT NOT NULL DEFAULT 'starter' CHECK (status IN ('starter', 'substitute')),
+  is_captain INTEGER NOT NULL DEFAULT 0,
   position INTEGER,
   average_score REAL,
   published INTEGER NOT NULL DEFAULT 0,
