@@ -32,12 +32,21 @@ const id: Dict = {
   "home.highlight.heading": "Sorotan Roster",
   "home.viewAll": "Lihat semua",
   "home.playerLabel": "Pemain",
-  "footer.tagline": "4CWC.ID — dibuat oleh Honkenway bersama Claude AI.",
+  "footer.tagline": "4CWC.ID — dibuat oleh Honkenway dengan Claude AI.",
   "players.title": "Tournament History",
   "players.all": "Semua",
   "players.empty": "Roster musim ini belum dipublikasikan.",
   "players.noSeasons": "Belum ada data musim di database.",
 
+  "result.Juara 1": "Juara 1",
+  "result.Juara 2": "Juara 2",
+  "result.Juara 3": "Juara 3",
+  "result.Peringkat 4": "Peringkat 4",
+  "result.Perempat Final": "Perempat Final",
+  "result.Semifinal": "Semifinal",
+  "result.Final": "Final",
+  "result.Round of 16": "Round of 16",
+  "result.Round of 32": "Round of 32",
   "players.captain": "Kapten",
   "players.record": "Rekor",
   "players.seed": "Seed kualifikasi",
@@ -148,6 +157,15 @@ const en: Dict = {
   "players.empty": "This season's roster has not been published.",
   "players.noSeasons": "No season data in the database yet.",
 
+  "result.Juara 1": "1st Place",
+  "result.Juara 2": "2nd Place",
+  "result.Juara 3": "3rd Place",
+  "result.Peringkat 4": "4th Place",
+  "result.Perempat Final": "Quarterfinals",
+  "result.Semifinal": "Semifinals",
+  "result.Final": "Finals",
+  "result.Round of 16": "Round of 16",
+  "result.Round of 32": "Round of 32",
   "players.captain": "Captain",
   "players.record": "Record",
   "players.seed": "Qualifier seed",
@@ -270,4 +288,17 @@ export function formatDateTime(value: string | null | undefined, lang: Lang): st
       timeZone: TZ,
     }).format(d) + " " + TZ_LABEL
   );
+}
+
+/**
+ * Season placements are stored the way they were curated (in Indonesian).
+ * This renders them in the reader's language, falling back to the stored
+ * string verbatim for any value that has no translation yet — better an
+ * untranslated label than a missing one.
+ */
+export function formatResult(result: string | null | undefined, lang: Lang): string | null {
+  if (!result) return null;
+  const key = "result." + result.trim();
+  const dict = DICTS[lang] ?? DICTS[DEFAULT_LANG];
+  return dict[key] ?? result;
 }
