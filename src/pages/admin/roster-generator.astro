@@ -205,7 +205,7 @@ const isPublished = rosterRows.length > 0 && (rosterRows as any[]).every((r) => 
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-top:26px; padding-top:22px; border-top:1px solid var(--border-faint); flex-wrap:wrap; gap:16px;">
                   <p style="font-size:12.5px; color:var(--text-muted); max-width:420px; line-height:1.6;">
                     {isPublished
-                      ? "Roster ini sudah dipublikasikan dan tampil di Team Dashboard & Player History."
+                      ? "Roster ini sudah dipublikasikan dan tampil di Team Dashboard & Tournament History."
                       : "Roster masih draf. Publikasikan agar tampil di Team Dashboard dan hanya terlihat oleh anggota roster terkait."}
                   </p>
                   <form method="POST" action="/api/roster/publish">
