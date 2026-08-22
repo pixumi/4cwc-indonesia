@@ -47,6 +47,19 @@ const id: Dict = {
   "players.empty": "Roster musim ini belum dipublikasikan.",
   "players.noSeasons": "Belum ada data musim di database.",
 
+  "players.captain": "Kapten",
+  "players.record": "Rekor",
+  "players.seed": "Seed kualifikasi",
+  "players.matchHistory": "Riwayat Pertandingan",
+  "players.round": "Babak",
+  "players.opponent": "Lawan",
+  "players.score": "Skor",
+  "players.mp": "MP Link",
+  "players.win": "Menang",
+  "players.loss": "Kalah",
+  "players.walkover": "WBD",
+  "players.source": "Sumber data",
+  "players.noMatches": "Belum ada data pertandingan untuk musim ini.",
   "players.activeIn": "Aktif",
   "players.pendingTitle": "Roster musim ini belum dipublikasikan. Data akan tampil otomatis setelah admin menerbitkannya lewat Roster Generator.",
   "login.back": "Kembali ke Beranda",
@@ -149,6 +162,19 @@ const en: Dict = {
   "players.empty": "This season's roster has not been published.",
   "players.noSeasons": "No season data in the database yet.",
 
+  "players.captain": "Captain",
+  "players.record": "Record",
+  "players.seed": "Qualifier seed",
+  "players.matchHistory": "Match History",
+  "players.round": "Round",
+  "players.opponent": "Opponent",
+  "players.score": "Score",
+  "players.mp": "MP Link",
+  "players.win": "Win",
+  "players.loss": "Loss",
+  "players.walkover": "WBD",
+  "players.source": "Data source",
+  "players.noMatches": "No match data for this season yet.",
   "players.activeIn": "Active",
   "players.pendingTitle": "This season's roster has not been published. It will appear automatically once the admin publishes it via the Roster Generator.",
   "login.back": "Back to Home",
@@ -226,10 +252,17 @@ export function useTranslations(lang: Lang) {
 /** Locale-aware date formatting for a stored ISO-ish UTC string. */
 export function formatDateTime(value: string | null | undefined, lang: Lang): string | null {
   if (!value) return null;
-  const iso = value.includes("T") ? value : value.replace(" ", "T") + "Z";
-  const d = new Date(iso.endsWith("Z") ? iso : iso + "Z");
+  // Date-only values (historical rows where no kick-off time is recorded)
+  // render as a plain date, with no misleading 00:00 time.
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  const iso = dateOnly ? value + "T00:00:00Z" : (value.includes("T") ? value : value.replace(" ", "T")) + "Z";
+  const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return value;
-  return new Intl.DateTimeFormat(lang === "id" ? "id-ID" : "en-GB", {
+  const locale = lang === "id" ? "id-ID" : "en-GB";
+  if (dateOnly) {
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(d);
+  }
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "UTC",
