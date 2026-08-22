@@ -6,6 +6,12 @@ export const prerender = false;
 const STARTER_COUNT = 6;
 
 export const POST: APIRoute = async (context) => {
+  // Defence in depth: middleware already gates /api/*, but an endpoint that can
+  // write to the database should not rely on a single check somewhere else.
+  if (context.locals.user?.role !== "admin") {
+    return new Response("Forbidden", { status: 403 });
+  }
+
   const db = env.DB;
   const form = await context.request.formData();
   const seasonId = Number(form.get("season"));
