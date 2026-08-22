@@ -2,7 +2,8 @@
 import { env } from "cloudflare:workers";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PublicNav from "../components/PublicNav.astro";
-import { formatDateTime } from "../lib/i18n";
+import PlayerCard from "../components/PlayerCard.astro";
+import MatchRow from "../components/MatchRow.astro";
 
 const db = env.DB;
 const t = Astro.locals.t;
@@ -23,7 +24,8 @@ for (const s of seasons as any[]) {
     (
       await db
         .prepare(
-          `SELECT p.username as username, re.is_captain as is_captain, re.status as status
+          `SELECT p.username as username, p.osu_id as osu_id, p.cover_url as cover_url,
+                  re.is_captain as is_captain
            FROM roster_entries re
            JOIN players p ON p.id = re.player_id
            WHERE re.season_id = ?1 AND re.published = 1
@@ -45,12 +47,6 @@ for (const s of seasons as any[]) {
         .all()
     ).results ?? [];
 }
-
-/** Won / lost / walkover-win, from Indonesia's point of view. */
-function outcome(m: any): "win" | "loss" | "wo" {
-  if (m.score_us === null || m.score_them === null) return "wo";
-  return m.score_us > m.score_them ? "win" : "loss";
-}
 ---
 
 <BaseLayout title={t("players.title")}>
@@ -63,28 +59,24 @@ function outcome(m: any): "win" | "loss" | "wo" {
     </p>
   </div>
 
-  <div style="display:flex; gap:12px; padding:0 80px 40px 80px; flex-wrap:wrap;">
-    <a href="#" class="pill active">{t("players.all")}</a>
+  <div id="year-filter" style="display:flex; gap:12px; padding:0 80px 40px 80px; flex-wrap:wrap;">
+    <button type="button" class="pill active" data-year="all">{t("players.all")}</button>
     {
       (seasons as any[]).map((s) => (
-        <a href={`#season-${s.id}`} class={`pill ${rosterBySeasonId[s.id]?.length ? "" : "soon"}`}>
+        <button type="button" class={`pill ${rosterBySeasonId[s.id]?.length ? "" : "soon"}`} data-year={s.year}>
           {s.year}
-        </a>
+        </button>
       ))
     }
   </div>
 
   {
     (seasons as any[]).map((s) => (
-      <div id={`season-${s.id}`} style="padding:0 80px 56px 80px;">
+      <section class="season" data-year={s.year} id={`season-${s.year}`} style="padding:0 80px 56px 80px;">
         <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
           <h2 style="font-size:22px; font-weight:600;">{s.label}</h2>
           {s.result && <span class="badge badge-gold">{s.result}</span>}
-          {s.record && (
-            <span class="badge badge-muted">
-              {t("players.record")} {s.record}
-            </span>
-          )}
+          {s.record && <span class="badge badge-muted">{t("players.record")} {s.record}</span>}
           {s.seed && (
             <span style="font-size:12.5px; color:var(--text-muted);">
               {t("players.seed")}: {s.seed}
@@ -99,112 +91,54 @@ function outcome(m: any): "win" | "loss" | "wo" {
         )}
 
         {rosterBySeasonId[s.id]?.length ? (
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-top:24px;">
+          <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; margin-top:24px;">
             {rosterBySeasonId[s.id].map((p: any) => (
-              <div
-                class="card"
-                style={`padding:20px; display:flex; align-items:center; gap:14px; ${p.is_captain ? "border-color:oklch(0.80 0.13 85 / 0.45);" : ""}`}
-              >
-                <div class="avatar" style="width:46px;height:46px;font-size:17px;">
-                  {p.username.charAt(0).toUpperCase()}
-                </div>
-                <div style="flex:1; min-width:0;">
-                  <div style="font-family:'Space Grotesk'; font-weight:600; font-size:15px;">{p.username}</div>
-                  <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-                    {t("home.playerLabel")} &middot; {t("players.activeIn")} {s.year}
-                  </div>
-                </div>
-                {p.is_captain === 1 && (
-                  <span class="badge badge-gold" style="flex-shrink:0;">
-                    <svg width="11" height="11" viewBox="0 0 576 512" fill="currentColor" aria-hidden="true">
-                      <path d="M309 106c11.4-7 19-19.7 19-34c0-22.1-17.9-40-40-40s-40 17.9-40 40c0 14.4 7.6 27 19 34L209.7 220.6c-9.1 18.2-32.7 23.4-48.6 10.7L72 160c5-6.7 8-15 8-24c0-22.1-17.9-40-40-40S0 113.9 0 136s17.9 40 40 40c.2 0 .5 0 .7 0L86.4 427.4c5.5 30.4 32 52.6 63 52.6l277.2 0c30.9 0 57.4-22.1 63-52.6L535.3 176c.2 0 .5 0 .7 0c22.1 0 40-17.9 40-40s-17.9-40-40-40s-40 17.9-40 40c0 9 3 17.3 8 24l-89.1 71.3c-15.9 12.7-39.5 7.5-48.6-10.7L309 106z" />
-                    </svg>
-                    {t("players.captain")}
-                  </span>
-                )}
-              </div>
+              <PlayerCard
+                username={p.username}
+                osuId={p.osu_id ?? null}
+                coverUrl={p.cover_url ?? null}
+                isCaptain={p.is_captain === 1}
+                subtitle={`${t("home.playerLabel")} · ${t("players.activeIn")} ${s.year}`}
+                captainLabel={t("players.captain")}
+              />
             ))}
           </div>
         ) : (
-          <div
-            class="card"
-            style="padding:40px; margin-top:24px; border-style:dashed; border-color:var(--border-subtle);"
-          >
+          <div class="card" style="padding:40px; margin-top:24px; border-style:dashed; border-color:var(--border-subtle);">
             <div style="font-size:14px; color:var(--text-muted); line-height:1.6; max-width:560px;">
               {t("players.pendingTitle")}
             </div>
           </div>
         )}
 
-        {/* Match history */}
-        <h3 style="font-size:15px; font-weight:600; margin-top:34px;">{t("players.matchHistory")}</h3>
+        <h3 style="font-size:15px; font-weight:600; margin-top:34px; margin-bottom:14px;">{t("players.matchHistory")}</h3>
         {matchesBySeasonId[s.id]?.length ? (
-          <div style="margin-top:14px; overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse; font-size:13.5px; min-width:640px;">
-              <thead>
-                <tr style="text-align:left; color:var(--text-muted); font-size:12px;">
-                  <th style="padding:8px 12px 8px 0; font-weight:600;">{t("players.round")}</th>
-                  <th style="padding:8px 12px; font-weight:600;">{t("players.opponent")}</th>
-                  <th style="padding:8px 12px; font-weight:600;">{t("players.score")}</th>
-                  <th style="padding:8px 12px; font-weight:600;">{t("admin.datetime")}</th>
-                  <th style="padding:8px 0 8px 12px; font-weight:600;">{t("players.mp")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matchesBySeasonId[s.id].map((m: any) => {
-                  const o = outcome(m);
-                  return (
-                    <tr style="border-top:1px solid var(--border-faint);">
-                      <td style="padding:11px 12px 11px 0; font-weight:600;">{m.round}</td>
-                      <td style="padding:11px 12px; color:var(--text-secondary);">{m.opponent}</td>
-                      <td style="padding:11px 12px;">
-                        {o === "wo" ? (
-                          <span class="badge badge-gold">{t("players.walkover")}</span>
-                        ) : (
-                          <span
-                            class="display"
-                            style={`font-weight:700; letter-spacing:0.02em; color:${o === "win" ? "var(--gold)" : "var(--text-muted)"};`}
-                          >
-                            {m.score_us}&ndash;{m.score_them}
-                          </span>
-                        )}
-                        <span
-                          style={`margin-left:9px; font-size:11.5px; color:${o === "loss" ? "var(--text-muted)" : "var(--gold-dim)"};`}
-                        >
-                          {o === "loss" ? t("players.loss") : t("players.win")}
-                        </span>
-                      </td>
-                      <td style="padding:11px 12px; color:var(--text-muted); font-size:12.5px; white-space:nowrap;">
-                        {formatDateTime(m.scheduled_at, lang) ?? "—"}
-                      </td>
-                      <td style="padding:11px 0 11px 12px;">
-                        {m.mp_link ? (
-                          <a href={m.mp_link} target="_blank" rel="noopener noreferrer" style="font-weight:600; font-size:12.5px;">
-                            osu! &rarr;
-                          </a>
-                        ) : (
-                          <span style="color:var(--text-muted); font-size:12.5px;">&mdash;</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div>
+            {matchesBySeasonId[s.id].map((m: any) => (
+              <MatchRow
+                round={m.round}
+                opponent={m.opponent}
+                scheduledAt={m.scheduled_at}
+                scoreUs={m.score_us}
+                scoreThem={m.score_them}
+                mpLink={m.mp_link}
+                notes={m.notes}
+                lang={lang}
+                t={t}
+              />
+            ))}
           </div>
         ) : (
-          <p style="margin-top:12px; font-size:13.5px; color:var(--text-muted);">{t("players.noMatches")}</p>
+          <p style="font-size:13.5px; color:var(--text-muted);">{t("players.noMatches")}</p>
         )}
 
         {s.source_url && (
           <p style="margin-top:14px; font-size:12px; color:var(--text-muted);">
             {t("players.source")}:{" "}
-            <a href={s.source_url} target="_blank" rel="noopener noreferrer">
-              {s.source_url}
-            </a>
+            <a href={s.source_url} target="_blank" rel="noopener noreferrer">{s.source_url}</a>
           </p>
         )}
-      </div>
+      </section>
     ))
   }
 
@@ -220,3 +154,47 @@ function outcome(m: any): "win" | "loss" | "wo" {
     </div>
   </div>
 </BaseLayout>
+
+<style>
+  /* The pills are buttons now (they filter rather than jump), so they need
+     the anchor styling that .pill assumed. */
+  #year-filter .pill {
+    font-family: "Manrope", sans-serif;
+    cursor: pointer;
+  }
+  .season[hidden] { display: none; }
+</style>
+
+<script>
+  // Year filter: "Semua" shows every season, a year shows only that one.
+  // Progressive enhancement — with JS off, every season stays visible.
+  const bar = document.getElementById("year-filter");
+  const sections = Array.from(document.querySelectorAll<HTMLElement>("section.season"));
+
+  if (bar) {
+    const pills = Array.from(bar.querySelectorAll<HTMLElement>(".pill"));
+
+    const apply = (year: string) => {
+      for (const el of sections) {
+        el.hidden = year !== "all" && el.dataset.year !== year;
+      }
+      for (const b of pills) {
+        b.classList.toggle("active", b.dataset.year === year);
+      }
+      const url = new URL(window.location.href);
+      if (year === "all") url.searchParams.delete("year");
+      else url.searchParams.set("year", year);
+      history.replaceState(null, "", url.pathname + url.search);
+    };
+
+    bar.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement | null;
+      const btn = target?.closest<HTMLElement>(".pill");
+      if (btn?.dataset.year) apply(btn.dataset.year);
+    });
+
+    // Honour ?year= on load so a filtered view can be linked to.
+    const initial = new URL(window.location.href).searchParams.get("year");
+    if (initial && sections.some((sec) => sec.dataset.year === initial)) apply(initial);
+  }
+</script>
