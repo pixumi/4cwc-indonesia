@@ -16,11 +16,6 @@ const playerCountRow = await db.prepare("SELECT COUNT(DISTINCT player_id) as c F
 }>();
 const totalPlayers = playerCountRow?.c ?? 0;
 
-const bestResultRow = await db
-  .prepare("SELECT result FROM seasons WHERE result IS NOT NULL ORDER BY year ASC LIMIT 1")
-  .first<{ result: string }>();
-const bestResult = bestResultRow?.result ?? "—";
-
 const highlightSeason = (seasons as any[]).find((s) => s.result) ?? null;
 const highlightRoster = highlightSeason
   ? ((
@@ -51,7 +46,7 @@ const highlightRoster = highlightSeason
       style="position:absolute; width:280px; height:280px; border-radius:50%; background:var(--violet); opacity:0.16; filter:blur(90px); top:60px; right:-40px;"
     >
     </div>
-    <div style="position:relative; max-width:760px;">
+    <div style="position:relative; max-width:900px;">
       <h1 style="font-size:56px; line-height:1.12; font-weight:600; letter-spacing:-0.01em;">
         <span
           style="background:linear-gradient(120deg, var(--gold), var(--violet)); -webkit-background-clip:text; background-clip:text; color:transparent;"
@@ -59,32 +54,25 @@ const highlightRoster = highlightSeason
         ><br />
         Indonesia Team
       </h1>
-      <p style="margin-top:24px; font-size:16.5px; line-height:1.7; color:var(--text-secondary); max-width:600px;">
-        {t("home.lede")}
-      </p>
-      <div style="display:flex; gap:16px; margin-top:36px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:36px; margin-top:36px; flex-wrap:wrap;">
         <a href="/players" class="btn-primary">{t("home.cta.players")}</a>
-        <a href="#roster-highlight" class="btn-ghost">{t("home.cta.roster")}</a>
-      </div>
-    </div>
-  </div>
 
-  <div
-    style="display:flex; align-items:center; justify-content:center; gap:64px; padding:32px 80px; border-top:1px solid var(--border-faint); border-bottom:1px solid var(--border-faint); flex-wrap:wrap;"
-  >
-    <div style="text-align:center;">
-      <div class="display" style="font-size:28px; font-weight:700; color:var(--gold);">{totalSeasons}</div>
-      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">{t("home.stat.seasonsShort")}</div>
-    </div>
-    <div style="width:1px; height:36px; background:var(--border-subtle);"></div>
-    <div style="text-align:center;">
-      <div class="display" style="font-size:28px; font-weight:700; color:var(--violet);">{totalPlayers}</div>
-      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">{t("home.stat.playersShort")}</div>
-    </div>
-    <div style="width:1px; height:36px; background:var(--border-subtle);"></div>
-    <div style="text-align:center;">
-      <div class="display" style="font-size:22px; font-weight:700; color:var(--text-primary);">{bestResult}</div>
-      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">{t("home.stat.bestShort")}</div>
+        <div style="display:flex; align-items:center; gap:28px;">
+          <div>
+            <div class="display" style="font-size:26px; font-weight:700; color:var(--gold); line-height:1.1;">
+              {totalSeasons}
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:3px;">{t("home.stat.seasonsShort")}</div>
+          </div>
+          <div style="width:1px; height:34px; background:var(--border-subtle);"></div>
+          <div>
+            <div class="display" style="font-size:26px; font-weight:700; color:var(--violet); line-height:1.1;">
+              {totalPlayers}
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:3px;">{t("home.stat.playersShort")}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
