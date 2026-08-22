@@ -52,11 +52,11 @@ for (const s of seasons as any[]) {
 <BaseLayout title={t("players.title")}>
   <PublicNav active="players" />
 
-  <div style="padding:64px 80px 28px 80px;">
-    <h1 style="font-size:38px; font-weight:600; letter-spacing:-0.01em;">{t("players.title")}</h1>
+  <div class="page-pad" style="padding-top:clamp(36px, 7vw, 64px); padding-bottom:24px;">
+    <h1 style="font-size:clamp(26px, 5vw, 38px); font-weight:600; letter-spacing:-0.01em;">{t("players.title")}</h1>
   </div>
 
-  <div id="year-filter" style="display:flex; gap:12px; padding:0 80px 40px 80px; flex-wrap:wrap;">
+  <div id="year-filter" class="page-pad" style="display:flex; gap:12px; padding-top:0; padding-bottom:40px; flex-wrap:wrap;">
     <button type="button" class="pill active" data-year="all">{t("players.all")}</button>
     {
       (seasons as any[]).map((s) => (
@@ -69,9 +69,9 @@ for (const s of seasons as any[]) {
 
   {
     (seasons as any[]).map((s) => (
-      <section class="season" data-year={s.year} id={`season-${s.year}`} style="padding:0 80px 56px 80px;">
+      <section class="season page-pad" data-year={s.year} id={`season-${s.year}`} style="padding-top:0; padding-bottom:56px;">
         <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-          <h2 style="font-size:22px; font-weight:600;">{s.label}</h2>
+          <h2 style="font-size:clamp(18px, 3vw, 22px); font-weight:600;">{s.label}</h2>
           {s.result && <span class="badge badge-gold">{s.result}</span>}
           {s.record && <span class="badge badge-muted">{t("players.record")} {s.record}</span>}
           {s.seed && (
@@ -82,7 +82,7 @@ for (const s of seasons as any[]) {
         </div>
 
         {rosterBySeasonId[s.id]?.length ? (
-          <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; margin-top:24px;">
+          <div class="roster-grid" style="margin-top:24px;">
             {rosterBySeasonId[s.id].map((p: any) => (
               <PlayerCard
                 username={p.username}
@@ -143,10 +143,11 @@ for (const s of seasons as any[]) {
     ))
   }
 
-  {seasons.length === 0 && <div style="padding:0 80px 80px 80px; color:var(--text-muted);">{t("players.noSeasons")}</div>}
+  {seasons.length === 0 && <div class="page-pad" style="padding-top:0; padding-bottom:80px; color:var(--text-muted);">{t("players.noSeasons")}</div>}
 
   <div
-    style="display:flex; align-items:center; justify-content:space-between; padding:32px 80px; border-top:1px solid var(--border-faint); flex-wrap:wrap; gap:16px;"
+    class="page-pad"
+    style="display:flex; align-items:center; justify-content:space-between; padding-top:32px; padding-bottom:32px; border-top:1px solid var(--border-faint); flex-wrap:wrap; gap:16px;"
   >
     <div style="font-size:13px; color:var(--text-muted);">{t("footer.tagline")}</div>
     <div style="display:flex; gap:28px;">

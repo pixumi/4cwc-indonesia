@@ -73,10 +73,10 @@ const statusBadge: Record<string, string> = {
 ---
 
 <BaseLayout title="Team Dashboard">
-  <div style="display:flex; width:100%;">
+  <div class="app-shell">
     <AdminSidebar active="dashboard" role={user.role} displayName={user.displayName} />
 
-    <div style="flex:1; padding:44px 56px 64px 56px; max-width:1160px;">
+    <div class="app-main" style="max-width:1160px;">
       <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;">
         <div>
           <h1 style="font-size:27px; font-weight:600;">{t("dash.welcome")} {user.displayName}</h1>
@@ -110,7 +110,7 @@ const statusBadge: Record<string, string> = {
         {starters.length === 0 ? (
           <p style="margin-top:18px; color:var(--text-muted); font-size:14px;">{t("dash.roster.empty")}</p>
         ) : (
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; margin-top:18px;">
+          <div class="roster-grid" style="margin-top:18px;">
             {starters.map((p: any) => (
               <div class="card" style="padding:18px; display:flex; align-items:center; gap:13px;">
                 <div class="avatar" style="width:42px;height:42px;font-size:15px;">
@@ -198,7 +198,7 @@ const statusBadge: Record<string, string> = {
         {teamInfo.length === 0 ? (
           <p style="margin-top:18px; color:var(--text-muted); font-size:14px;">{t("info.empty")}</p>
         ) : (
-          <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-top:18px;">
+          <div class="info-grid" style="margin-top:18px;">
             {(teamInfo as any[]).map((row) => (
               <div class="card" style="padding:18px 20px;">
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
